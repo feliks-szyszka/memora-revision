@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memora - GCSE Flashcard Study Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0D0D0D;
+            color: #F5F5F5;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #171717;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 4px;
+            transition: background 200ms;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #525252;
+        }
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(23, 23, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #2E2E2E;
+            padding: 1.25rem 0;
+            z-index: 100;
+            transition: all 300ms ease;
+        }
+        .container {
+            max-width: 85rem;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f5f5f5;
+            cursor: pointer;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .logo:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+        .logo:active {
+            transform: scale(0.98);
+        }
+        .nav-pills {
+            display: flex;
+            gap: 0.5rem;
+            background: #171717;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid #2E2E2E;
+        }
+        .nav-pill {
+            padding: 0.65rem 1.25rem;
+            background: transparent;
+            border: none;
+            color: #A3A3A3;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .nav-pill::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 80%;
+            height: 2px;
+            background: #0A84FF;
+            border-radius: 2px;
+            transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-pill:hover {
+            color: #F5F5F5;
+            background: #212121;
+            transform: translateY(-1px);
+        }
+        .nav-pill:active {
+            transform: translateY(0);
+        }
+        .nav-pill.active {
+            color: #F5F5F5;
+            background: #0A84FF;
+        }
+        .nav-pill.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+        .page {
+            display: none;
+            animation: fadeIn 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .main {
+            padding: 2.5rem 0;
+            min-height: calc(100vh - 80px);
+        }
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .page-subtitle {
+            color: #A3A3A3;
+            font-size: 1rem;
+            animation: slideIn 500ms cubic-bezier(0.4, 0, 0.2, 1) 100ms both;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #171717 0%, #1a1a1a 100%);
+            border: 1px solid #2E2E2E;
+            border-radius: 1rem;
+            padding: 1.75rem;
+            transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(10, 132, 255, 0.1), transparent);
+            transition: left 600ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover::before {
+            left: 100%;
+        }
+        .stat-card:hover {
+            border-color: #0A84FF;
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.2);
+        }
+        .stat-card:active {
+            transform: translateY(-2px) scale(1.01);
+        }
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover .stat-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+        .stat-icon.blue {
+            background: rgba(10, 132, 255, 0.15);
+            color: #0A84FF;
+        }
+        .stat-icon.green {
+            background: rgba(48, 209, 88, 0.15);
+            color: #30D158;
+        }
+        .stat-icon.purple {
+            background: rgba(191, 90, 242, 0.15);
+            color: #BF5AF2;
+        }
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #F5F5F5;
+            line-height: 1;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover .stat-value {
+            transform: scale(1.05);
+        }
+        .stat-label {
+            color: #A3A3A3;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 500ms, height 500ms;
+        }
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: #0A84FF;
+            color: #F5F5F5;
+            box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.5);
+            filter: brightness(1.1);
+        }
+        .btn-secondary {
+            background: #212121;
+            color: #F5F5F5;
+            border: 1px solid #2E2E2E;
+        }
+        .btn-secondary:hover {
+            border-color: #0A84FF;
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.2);
+        }
+        .btn-success {
+            background: #30D158;
+            color: #0D0D0D;
+        }
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .subject-card {
+            background: #171717;
+            border: 1px solid #2E2E2E;
+            border-radius: 1rem;
+            padding: 1.75rem;
+            cursor: pointer;
+            transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .subject-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            transform: translate(-50%, -50%);
+            transition: width 500ms, height 500ms;
+            border-radius: 50%;
+        }
+        .subject-card:hover::after {
+            width: 400px;
+            height: 400px;
+        }
+        .subject-card:hover {
+            border-color: #0A84FF;
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.25);
+        }
+        .subject-card:hover::before {
+            transform: scaleX(1);
+        }
+        .subject-card:active {
+            transform: translateY(-4px);
+        }
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .subject-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            transition: color 300ms;
+        }
+        .subject-card:hover .subject-name {
+            color: #0A84FF;
+        }
+        .subject-stats {
+            color: #A3A3A3;
+            font-size: 0.9rem;
+            transition: color 300ms;
+        }
+        .subject-card:hover .subject-stats {
+            color: #C4C4C4;
+        }
+        .folder-list, .packs-list {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2E2E2E;
+            position: relative;
+            z-index: 1;
+        }
+        .folder-item, .pack-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            color: #A3A3A3;
+            font-size: 0.85rem;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .folder-item:hover, .pack-item:hover {
+            color: #F5F5F5;
+            transform: translateX(4px);
+        }
+        .folder-name, .pack-name {
+            font-weight: 500;
+        }
+        .folder-count, .pack-count {
+            background: #212121;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            transition: all 250ms;
+        }
+        .folder-item:hover .folder-count,
+        .pack-item:hover .pack-count {
+            background: #0A84FF;
+            color: #F5F5F5;
+            transform: scale(1.1);
+        }
+        .export-btn {
+            background: transparent;
+            border: none;
+            color: #A3A3A3;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            opacity: 0;
+            transition: opacity 200ms, color 200ms;
+        }
+        .folder-item:hover .export-btn,
+        .pack-item:hover .export-btn,
+        .subject-card:hover .export-subject {
+            opacity: 1;
+        }
+        .export-btn:hover {
+            color: #0A84FF;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 300ms ease-out;
+        }
+        .modal.active {
+            display: flex;
+        }
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal-content {
+            background: #171717;
+            border: 1px solid #2E2E2E;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: #A3A3A3;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+        .close-modal:hover {
+            background: #212121;
+            color: #FF453A;
+            transform: rotate(90deg);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #A3A3A3;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: #212121;
+            border: 1px solid #2E2E2E;
+            border-radius: 0.75rem;
+            color: #F5F5F5;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #0A84FF;
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+            background: #1a1a1a;
+            transform: translateY(-2px);
+        }
+        input:hover, textarea:hover, select:hover {
+            border-color: #424242;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .pack-detail-header {
+            background: linear-gradient(135deg, #171717 0%, #1a1a1a 100%);
+            border: 1px solid #2E2E2E;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #A3A3A3;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .breadcrumb-link {
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .breadcrumb-link:hover {
+            color: #0A84FF;
+            transform: translateX(-2px);
+        }
+        .pack-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .pack-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: #A3A3A3;
+        }
+        .flashcards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+        .flashcard-item {
+            background: #171717;
+            border: 1px solid #2E2E2E;
+            border-radius: 0.875rem;
+            padding: 1.5rem;
+            transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .flashcard-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(10, 132, 255, 0.05), transparent);
+            transition: left 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flashcard-item:hover::before {
+            left: 100%;
+        }
+        .flashcard-item:hover {
+            border-color: #0A84FF;
+            transform: translateX(6px);
+            box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2);
+        }
+        .flashcard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        .flashcard-number {
+            background: #0A84FF;
+            color: #F5F5F5;
+            width: 32px;
+            height: 32px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flashcard-item:hover .flashcard-number {
+            transform: scale(1.15) rotate(5deg);
+        }
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #A3A3A3;
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1rem;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0.375rem;
+        }
+        .icon-btn:hover {
+            color: #FF453A;
+            background: rgba(255, 69, 58, 0.1);
+            transform: scale(1.15);
+        }
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+        .flashcard-question {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #F5F5F5;
+            font-size: 1rem;
+        }
+        .flashcard-answer {
+            color: #A3A3A3;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #737373;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .study-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .flashcard-display {
+            width: 100%;
+            height: 400px;
+            perspective: 1000px;
+            margin: 2rem 0;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flashcard-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: #171717;
+            border: 2px solid #2E2E2E;
+            border-radius: 1.25rem;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flashcard-display:hover .flashcard-face {
+            border-width: 3px;
+        }
+        .flashcard-front {
+            border-color: #0A84FF;
+        }
+        .flashcard-display:hover .flashcard-front {
+            box-shadow: 0 8px 32px rgba(10, 132, 255, 0.3);
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+            border-color: #30D158;
+        }
+        .flashcard-display:hover .flashcard-inner.flipped .flashcard-back {
+            box-shadow: 0 8px 32px rgba(48, 209, 88, 0.3);
+        }
+        .flashcard-label {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #A3A3A3;
+            letter-spacing: 1px;
+        }
+        .flashcard-content {
+            font-size: 1.35rem;
+            line-height: 1.8;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #212121;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0A84FF, #0663c0);
+            transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(10, 132, 255, 0.5);
+        }
+        .study-info {
+            text-align: center;
+            color: #A3A3A3;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .study-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .nav-pills {
+                display: none;
+            }
+            .subjects-grid, .flashcards-grid {
+                grid-template-columns: 1fr;
+            }
+            .study-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo" onclick="showPage('dashboard')">
+                    <i class="fas fa-brain"></i>
+                    <span>Memora</span>
+                </div>
+                <nav class="nav-pills">
+                    <button class="nav-pill active" onclick="showPage('dashboard')">
+                        Dashboard
+                    </button>
+                    <button class="nav-pill" onclick="showPage('library')">
+                        Library
+                    </button>
+                    <button class="nav-pill" onclick="showPage('study')">
+                        Study
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <main class="main">
+        <div class="container">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </h1>
+                    <p class="page-subtitle">Track your progress and manage your flashcards</p>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-cards">0</div>
+                                <div class="stat-label">Total Flashcards</div>
+                            </div>
+                            <div class="stat-icon blue">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-packs">0</div>
+                                <div class="stat-label">Study Packs</div>
+                            </div>
+                            <div class="stat-icon green">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="studied-today">0</div>
+                                <div class="stat-label">Studied Today</div>
+                            </div>
+                            <div class="stat-icon purple">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-book-open"></i>
+                        Your Packs
+                    </h2>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">
+                            <i class="fas fa-file-import"></i> Import
+                        </button>
+                        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                        <button class="btn btn-primary" onclick="openCreatePackModal()">
+                            <i class="fas fa-plus"></i> New Pack
+                        </button>
+                    </div>
+                </div>
+                <div id="subjects-container" class="subjects-grid"></div>
+            </div>
+            <!-- Library Page -->
+            <div id="library-page" class="page">
+                <div id="library-content"></div>
+            </div>
+            <!-- Study Page -->
+            <div id="study-page" class="page">
+                <div id="study-content"></div>
+            </div>
+        </div>
+    </main>
+    <!-- Create Pack Modal -->
+    <div id="create-pack-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Pack</h3>
+                <button class="close-modal" onclick="closeCreatePackModal()">×</button>
+            </div>
+            <form id="pack-form">
+                <div class="form-group">
+                    <label for="pack-subject">Subject</label>
+                    <select id="pack-subject" required onchange="updateFolderOptions()">
+                        <option value="">Select a subject...</option>
+                        <option value="Maths">Maths</option>
+                        <option value="English Language">English Language</option>
+                        <option value="English Literature">English Literature</option>
+                        <option value="Science">Science (Combined)</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Physics">Physics</option>
+                        <option value="History">History</option>
+                        <option value="Geography">Geography</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Business">Business Studies</option>
+                        <option value="Music">Music</option>
+                        <option value="Languages">Languages (French, Spanish, etc.)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pack-folder">Folder (optional)</label>
+                    <input type="text" id="pack-folder" placeholder="e.g., Algebra, Cell Biology">
+                </div>
+                <div class="form-group">
+                    <label for="pack-name">Pack Name</label>
+                    <input type="text" id="pack-name" placeholder="e.g., Quadratic Equations" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-check"></i> Create Pack
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- Add Flashcard Modal -->
+    <div id="add-flashcard-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Flashcard</h3>
+                <button class="close-modal" onclick="closeAddFlashcardModal()">×</button>
+            </div>
+            <form id="flashcard-form">
+                <div class="form-group">
+                    <label for="flashcard-question">Question / Term</label>
+                    <textarea id="flashcard-question" placeholder="Enter your question..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="flashcard-answer">Answer / Definition</label>
+                    <textarea id="flashcard-answer" placeholder="Enter the answer..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-plus"></i> Add Flashcard
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Hierarchical structure: subjects → folders → packs
+        let subjects = {};
+        let currentPackId = null;
+        let currentStudyIndex = 0;
+        let isFlipped = false;
+        let studiedToday = 0;
+
+        function init() {
+            loadData();
+            updateStats();
+            renderDashboard();
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('memora_subjects');
+            if (stored) {
+                subjects = JSON.parse(stored);
+            }
+            const today = new Date().toDateString();
+            const storedDate = localStorage.getItem('memora_study_date');
+            const count = localStorage.getItem('memora_studied_today');
+            if (storedDate === today && count) {
+                studiedToday = parseInt(count);
+            } else {
+                studiedToday = 0;
+                localStorage.setItem('memora_study_date', today);
+                localStorage.setItem('memora_studied_today', '0');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('memora_subjects', JSON.stringify(subjects));
+            updateStats();
+        }
+
+        function updateStats() {
+            let totalPacks = 0;
+            let totalCards = 0;
+            for (const subject in subjects) {
+                const folders = subjects[subject].folders || {};
+                for (const folder in folders) {
+                    totalPacks += folders[folder].length;
+                    folders[folder].forEach(pack => totalCards += pack.cards.length);
+                }
+            }
+            document.getElementById('total-cards').textContent = totalCards;
+            document.getElementById('total-packs').textContent = totalPacks;
+            document.getElementById('studied-today').textContent = studiedToday;
+        }
+
+        function incrementStudiedToday() {
+            studiedToday++;
+            localStorage.setItem('memora_studied_today', studiedToday.toString());
+            document.getElementById('studied-today').textContent = studiedToday;
+        }
+
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${pageName}-page`).classList.add('active');
+            const pills = document.querySelectorAll('.nav-pill');
+            pills.forEach(pill => {
+                if (pill.textContent.trim().toLowerCase() === pageName.toLowerCase()) {
+                    pill.classList.add('active');
+                }
+            });
+            if (pageName === 'dashboard') renderDashboard();
+            if (pageName === 'library') renderLibrary();
+            if (pageName === 'study') renderStudySelection();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('subjects-container');
+            if (Object.keys(subjects).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No study packs yet</h3>
+                        <p>Create your first pack to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = Object.entries(subjects).map(([subject, data]) => {
+                const folders = data.folders || {};
+                const folderEntries = Object.entries(folders);
+                return `
+                    <div class="subject-card">
+                        <div class="subject-header">
+                            <div>
+                                <div class="subject-name">${subject}</div>
+                                <div class="subject-stats">
+                                    ${folderEntries.length} folder${folderEntries.length !== 1 ? 's' : ''} • 
+                                    ${Object.values(folders).flat().length} packs
+                                </div>
+                            </div>
+                            <button class="export-btn export-subject" title="Export subject" onclick="exportSubject('${subject}')">
+                                <i class="fas fa-file-export"></i>
+                            </button>
+                        </div>
+                        <div class="folder-list">
+                            ${folderEntries.length === 0 ? `
+                                <div class="folder-item">
+                                    <span class="folder-name">No folders</span>
+                                </div>
+                            ` : folderEntries.map(([folderName, packs]) => `
+                                <div class="folder-item">
+                                    <span class="folder-name">${folderName}</span>
+                                    <span style="display:flex;align-items:center;gap:0.5rem;">
+                                        <span class="folder-count">${packs.length}</span>
+                                        <button class="export-btn" title="Export folder" onclick="exportFolder('${subject}', '${folderName}')">
+                                            <i class="fas fa-file-export"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                                <div class="packs-list" style="margin-left: 1.5rem; padding-top: 0.5rem;">
+                                    ${packs.map(pack => `
+                                        <div class="pack-item" onclick="viewPack('${subject}', '${folderName}', '${pack.id}')">
+                                            <span class="pack-name">${pack.name}</span>
+                                            <span style="display:flex;align-items:center;gap:0.5rem;">
+                                                <span class="pack-count">${pack.cards.length}</span>
+                                                <button class="export-btn" title="Export pack" onclick="exportPack('${subject}', '${folderName}', '${pack.id}')">
+                                                    <i class="fas fa-file-export"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLibrary() {
+            const container = document.getElementById('library-content');
+            const allPacks = [];
+            for (const subject in subjects) {
+                const folders = subjects[subject].folders || {};
+                for (const folder in folders) {
+                    folders[folder].forEach(pack => {
+                        allPacks.push({ subject, folder, ...pack });
+                    });
+                }
+            }
+
+            if (allPacks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        <h3>No packs in library</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-book"></i>
+                        Library
+                    </h1>
+                </div>
+                ${allPacks.map(pack => `
+                    <div style="margin-bottom: 2rem;">
+                        <div class="section-header">
+                            <h3 class="section-title" style="font-size: 1.25rem;">
+                                ${pack.subject} / ${pack.folder} / ${pack.name}
+                            </h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" onclick="addFlashcardToPack('${pack.subject}', '${pack.folder}', '${pack.id}')">
+                                    <i class="fas fa-plus"></i> Add Card
+                                </button>
+                                <button class="btn btn-secondary" onclick="deletePack('${pack.subject}', '${pack.folder}', '${pack.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flashcards-grid">
+                            ${pack.cards.length === 0 ? `
+                                <div class="empty-state">
+                                    <p>No flashcards yet</p>
+                                </div>
+                            ` : pack.cards.map((card, idx) => `
+                                <div class="flashcard-item">
+                                    <div class="flashcard-header">
+                                        <div class="flashcard-number">${idx + 1}</div>
+                                        <button class="icon-btn" onclick="deleteCard('${pack.subject}', '${pack.folder}', '${pack.id}', ${idx})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flashcard-question">${card.question}</div>
+                                    <div class="flashcard-answer">${card.answer}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function renderStudySelection() {
+            const container = document.getElementById('study-content');
+            const allPacks = [];
+            for (const subject in subjects) {
+                const folders = subjects[subject].folders || {};
+                for (const folder in folders) {
+                    folders[folder].forEach(pack => {
+                        allPacks.push({ subject, folder, ...pack });
+                    });
+                }
+            }
+
+            if (allPacks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>No packs to study</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        Study Mode
+                    </h1>
+                    <p class="page-subtitle">Select a pack to begin studying</p>
+                </div>
+                <div class="subjects-grid">
+                    ${allPacks.map(pack => `
+                        <div class="subject-card" onclick="startStudySession('${pack.subject}', '${pack.folder}', '${pack.id}')">
+                            <div class="subject-header">
+                                <div>
+                                    <div class="subject-name">${pack.folder} / ${pack.name}</div>
+                                    <div class="subject-stats">${pack.subject} • ${pack.cards.length} cards</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function startStudySession(subject, folder, packId) {
+            const pack = subjects[subject]?.folders?.[folder]?.find(p => p.id === packId);
+            if (!pack || pack.cards.length === 0) return;
+            currentPackId = { subject, folder, id: packId };
+            currentStudyIndex = 0;
+            isFlipped = false;
+            pack.cards.sort(() => Math.random() - 0.5);
+            renderStudyCard();
+        }
+
+        function renderStudyCard() {
+            const { subject, folder, id } = currentPackId;
+            const pack = subjects[subject].folders[folder].find(p => p.id === id);
+            const card = pack.cards[currentStudyIndex];
+            const progress = ((currentStudyIndex + 1) / pack.cards.length) * 100;
+            const container = document.getElementById('study-content');
+            container.innerHTML = `
+                <div class="study-container">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-link" onclick="renderStudySelection()">Study</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span>${pack.name}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="study-info">
+                        Card ${currentStudyIndex + 1} of ${pack.cards.length}
+                    </div>
+                    <div class="flashcard-display" onclick="flipCard()">
+                        <div class="flashcard-inner" id="flashcard-inner">
+                            <div class="flashcard-face flashcard-front">
+                                <span class="flashcard-label">Question</span>
+                                <div class="flashcard-content">${card.question}</div>
+                            </div>
+                            <div class="flashcard-face flashcard-back">
+                                <span class="flashcard-label">Answer</span>
+                                <div class="flashcard-content">${card.answer}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="study-controls">
+                        <button class="btn btn-secondary" onclick="previousCard()" ${currentStudyIndex === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="btn btn-primary" onclick="flipCard()">
+                            <i class="fas fa-sync"></i> Flip Card
+                        </button>
+                        <button class="btn btn-secondary" onclick="nextCard()">
+                            ${currentStudyIndex === pack.cards.length - 1 ? 'Finish' : 'Next'} 
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            isFlipped = false;
+        }
+
+        function flipCard() {
+            const inner = document.getElementById('flashcard-inner');
+            if (inner) {
+                isFlipped = !isFlipped;
+                if (isFlipped) {
+                    inner.classList.add('flipped');
+                    incrementStudiedToday();
+                } else {
+                    inner.classList.remove('flipped');
+                }
+            }
+        }
+
+        function nextCard() {
+            const { subject, folder, id } = currentPackId;
+            const pack = subjects[subject].folders[folder].find(p => p.id === id);
+            if (currentStudyIndex < pack.cards.length - 1) {
+                currentStudyIndex++;
+                renderStudyCard();
+            } else {
+                const container = document.getElementById('study-content');
+                container.innerHTML = `
+                    <div class="study-container">
+                        <div class="empty-state">
+                            <i class="fas fa-trophy" style="color: #30D158; font-size: 5rem;"></i>
+                            <h3>Excellent Work!</h3>
+                            <p>You've completed all ${pack.cards.length} flashcards in ${pack.name}</p>
+                            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                                <button class="btn btn-primary" onclick="startStudySession('${subject}', '${folder}', '${id}')">
+                                    <i class="fas fa-redo"></i> Study Again
+                                </button>
+                                <button class="btn btn-secondary" onclick="renderStudySelection()">
+                                    <i class="fas fa-arrow-left"></i> Choose Pack
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function previousCard() {
+            if (currentStudyIndex > 0) {
+                currentStudyIndex--;
+                renderStudyCard();
+            }
+        }
+
+        function viewPack(subject, folder, packId) {
+            currentPackId = { subject, folder, id: packId };
+            showPage('library');
+        }
+
+        function openCreatePackModal() {
+            document.getElementById('create-pack-modal').classList.add('active');
+        }
+
+        function closeCreatePackModal() {
+            document.getElementById('create-pack-modal').classList.remove('active');
+            document.getElementById('pack-form').reset();
+        }
+
+        function openAddFlashcardModal() {
+            document.getElementById('add-flashcard-modal').classList.add('active');
+        }
+
+        function closeAddFlashcardModal() {
+            document.getElementById('add-flashcard-modal').classList.remove('active');
+            document.getElementById('flashcard-form').reset();
+        }
+
+        function addFlashcardToPack(subject, folder, packId) {
+            currentPackId = { subject, folder, id: packId };
+            openAddFlashcardModal();
+        }
+
+        function updateFolderOptions() {
+            // Not needed for free-text folder input
+        }
+
+        document.getElementById('pack-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const subject = document.getElementById('pack-subject').value;
+            let folder = document.getElementById('pack-folder').value.trim();
+            const name = document.getElementById('pack-name').value;
+
+            if (!folder) folder = "Uncategorized";
+
+            if (!subjects[subject]) {
+                subjects[subject] = { folders: {} };
+            }
+            if (!subjects[subject].folders[folder]) {
+                subjects[subject].folders[folder] = [];
+            }
+
+            subjects[subject].folders[folder].push({
+                id: Date.now().toString(),
+                name,
+                cards: [],
+                created: new Date().toISOString()
+            });
+
+            saveData();
+            renderDashboard();
+            closeCreatePackModal();
+            showNotification('Pack created successfully!');
+        });
+
+        document.getElementById('flashcard-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const question = document.getElementById('flashcard-question').value;
+            const answer = document.getElementById('flashcard-answer').value;
+            const { subject, folder, id } = currentPackId;
+
+            const pack = subjects[subject].folders[folder].find(p => p.id === id);
+            if (pack) {
+                pack.cards.push({
+                    question,
+                    answer,
+                    created: new Date().toISOString()
+                });
+                saveData();
+                renderLibrary();
+                closeAddFlashcardModal();
+                showNotification('Flashcard added!');
+            }
+        });
+
+        function deleteCard(subject, folder, packId, cardIndex) {
+            if (confirm('Delete this flashcard?')) {
+                const pack = subjects[subject].folders[folder].find(p => p.id === packId);
+                pack.cards.splice(cardIndex, 1);
+                saveData();
+                renderLibrary();
+            }
+        }
+
+        function deletePack(subject, folder, packId) {
+            if (confirm('Delete this entire pack? This cannot be undone.')) {
+                subjects[subject].folders[folder] = subjects[subject].folders[folder].filter(p => p.id !== packId);
+                // Clean up empty folder
+                if (subjects[subject].folders[folder].length === 0) {
+                    delete subjects[subject].folders[folder];
+                }
+                // Clean up empty subject
+                if (Object.keys(subjects[subject].folders).length === 0) {
+                    delete subjects[subject];
+                }
+                saveData();
+                renderLibrary();
+                showNotification('Pack deleted');
+            }
+        }
+
+        // ✅ EXPORT FUNCTIONS
+        function exportSubject(subject) {
+            const data = { [subject]: subjects[subject] };
+            downloadJSON(data, `memora-${subject.replace(/\s+/g, '-')}.json`);
+        }
+
+        function exportFolder(subject, folder) {
+            const data = { [subject]: { folders: { [folder]: subjects[subject].folders[folder] } } };
+            downloadJSON(data, `memora-${subject.replace(/\s+/g, '-')}-${folder.replace(/\s+/g, '-')}.json`);
+        }
+
+        function exportPack(subject, folder, packId) {
+            const pack = subjects[subject].folders[folder].find(p => p.id === packId);
+            const data = { [subject]: { folders: { [folder]: [pack] } } };
+            downloadJSON(data, `memora-${subject.replace(/\s+/g, '-')}-${folder.replace(/\s+/g, '-')}-${pack.name.replace(/\s+/g, '-')}.json`);
+        }
+
+        function downloadJSON(data, filename) {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('Export successful!');
+        }
+
+        // ✅ IMPORT FUNCTION
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (typeof imported !== 'object' || Array.isArray(imported)) {
+                        throw new Error('Invalid structure');
+                    }
+
+                    for (const subject in imported) {
+                        if (!subjects[subject]) {
+                            subjects[subject] = { folders: {} };
+                        }
+                        const importedFolders = imported[subject].folders || {};
+                        for (const folder in importedFolders) {
+                            if (!subjects[subject].folders[folder]) {
+                                subjects[subject].folders[folder] = [];
+                            }
+                            const existingIds = new Set(subjects[subject].folders[folder].map(p => p.id));
+                            const newPacks = importedFolders[folder].filter(pack =>
+                                pack.id && pack.name && Array.isArray(pack.cards)
+                            ).filter(pack => !existingIds.has(pack.id));
+
+                            subjects[subject].folders[folder].push(...newPacks);
+                        }
+                    }
+
+                    saveData();
+                    renderDashboard();
+                    showNotification('Import successful!');
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to import: Invalid or corrupted file.');
+                } finally {
+                    document.getElementById('import-file').value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #30D158;
+                color: #0D0D0D;
+                padding: 1rem 1.5rem;
+                border-radius: 0.75rem;
+                font-weight: 600;
+                z-index: 1001;
+                animation: slideIn 250ms ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 250ms ease-in';
+                setTimeout(() => notification.remove(), 250);
+            }, 2000);
+        }
+
+        document.getElementById('create-pack-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCreatePackModal();
+        });
+
+        document.getElementById('add-flashcard-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddFlashcardModal();
+        });
+
+        init();
+    </script>
+</body>
+</html>
